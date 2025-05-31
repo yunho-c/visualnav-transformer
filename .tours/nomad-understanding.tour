@@ -1,0 +1,56 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "NoMaD-Understanding",
+  "steps": [
+    {
+      "file": "deployment/src/explore.py",
+      "description": "Main Loop",
+      "line": 107
+    },
+    {
+      "file": "deployment/src/explore.py",
+      "description": "Random noise is given as ImageNav input",
+      "line": 116
+    },
+    {
+      "file": "deployment/src/navigate.py",
+      "description": "Topomaps are part of the input — only for the navigation (not exploration) mode.",
+      "line": 92
+    },
+    {
+      "file": "deployment/src/navigate.py",
+      "description": "New model, new parameters (for me)",
+      "line": 123
+    },
+    {
+      "file": "deployment/src/navigate.py",
+      "description": "Main Loop",
+      "line": 130
+    },
+    {
+      "file": "deployment/src/navigate.py",
+      "description": "Mask is turned off (in other words, the goal is shown to the model)",
+      "line": 139
+    },
+    {
+      "file": "deployment/src/navigate.py",
+      "description": "What is `dist_pred_net`? What does it do?",
+      "line": 147
+    },
+    {
+      "file": "deployment/src/navigate.py",
+      "description": "`obs_cond` is the signal that connects encoder/transformer and the diffusion policy together.",
+      "line": 153
+    },
+    {
+      "file": "train/train.py",
+      "description": "What the hell is `dist_pred_network`? What does it do?",
+      "line": 211
+    },
+    {
+      "file": "train/train.py",
+      "description": "Training function for NoMaD",
+      "line": 326
+    }
+  ]
+}

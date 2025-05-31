@@ -38,14 +38,14 @@ with open(ROBOT_CONFIG_PATH, "r") as f:
     robot_config = yaml.safe_load(f)
 MAX_V = robot_config["max_v"]
 MAX_W = robot_config["max_w"]
-RATE = robot_config["frame_rate"] 
+RATE = robot_config["frame_rate"]
 
 # GLOBALS
 context_queue = []
-context_size = None  
+context_size = None
 subgoal = []
 
-# Load the model 
+# Load the model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 
@@ -87,7 +87,7 @@ def main(args: argparse.Namespace):
     model = model.to(device)
     model.eval()
 
-    
+
      # load topomap
     topomap_filenames = sorted(os.listdir(os.path.join(
         TOPOMAP_IMAGES_DIR, args.dir)), key=lambda x: int(x.split(".")[0]))
@@ -112,7 +112,7 @@ def main(args: argparse.Namespace):
     image_curr_msg = rospy.Subscriber(
         IMAGE_TOPIC, Image, callback_obs, queue_size=1)
     waypoint_pub = rospy.Publisher(
-        WAYPOINT_TOPIC, Float32MultiArray, queue_size=1)  
+        WAYPOINT_TOPIC, Float32MultiArray, queue_size=1)
     sampled_actions_pub = rospy.Publisher(SAMPLED_ACTIONS_TOPIC, Float32MultiArray, queue_size=1)
     goal_pub = rospy.Publisher("/topoplan/reached_goal", Bool, queue_size=1)
 
@@ -134,9 +134,9 @@ def main(args: argparse.Namespace):
             if model_params["model_type"] == "nomad":
                 obs_images = transform_images(context_queue, model_params["image_size"], center_crop=False)
                 obs_images = torch.split(obs_images, 3, dim=1)
-                obs_images = torch.cat(obs_images, dim=1) 
+                obs_images = torch.cat(obs_images, dim=1)
                 obs_images = obs_images.to(device)
-                mask = torch.zeros(1).long().to(device)  
+                mask = torch.zeros(1).long().to(device)
 
                 start = max(closest_node - args.radius, 0)
                 end = min(closest_node + args.radius + 1, goal_node)
@@ -149,7 +149,7 @@ def main(args: argparse.Namespace):
                 min_idx = np.argmin(dists)
                 closest_node = min_idx + start
                 print("closest node:", closest_node)
-                sg_idx = min(min_idx + int(dists[min_idx] < args.close_threshold), len(obsgoal_cond) - 1)
+                sg_idx = min(min_idx + int(dists[min_idx] < args.close_threshold), len(obsgoal_cond) - 1)  # subgoal
                 obs_cond = obsgoal_cond[sg_idx].unsqueeze(0)
 
                 # infer action
@@ -159,7 +159,7 @@ def main(args: argparse.Namespace):
                         obs_cond = obs_cond.repeat(args.num_samples, 1)
                     else:
                         obs_cond = obs_cond.repeat(args.num_samples, 1, 1)
-                    
+
                     # initialize action from Gaussian noise
                     noisy_action = torch.randn(
                         (args.num_samples, model_params["len_traj_pred"], 2), device=device)
@@ -190,7 +190,7 @@ def main(args: argparse.Namespace):
                 sampled_actions_msg.data = np.concatenate((np.array([0]), naction.flatten()))
                 print("published sampled actions")
                 sampled_actions_pub.publish(sampled_actions_msg)
-                naction = naction[0] 
+                naction = naction[0]
                 chosen_waypoint = naction[args.waypoint]
             else:
                 start = max(closest_node - args.radius, 0)
@@ -204,7 +204,7 @@ def main(args: argparse.Namespace):
                     goal_data = transform_images(sg_img, model_params["image_size"])
                     batch_obs_imgs.append(transf_obs_img)
                     batch_goal_data.append(goal_data)
-                    
+
                 # predict distances and waypoints
                 batch_obs_imgs = torch.cat(batch_obs_imgs, dim=0).to(device)
                 batch_goal_data = torch.cat(batch_goal_data, dim=0).to(device)
@@ -224,7 +224,7 @@ def main(args: argparse.Namespace):
                     closest_node = min(start + min_dist_idx + 1, goal_node)
         # RECOVERY MODE
         if model_params["normalize"]:
-            chosen_waypoint[:2] *= (MAX_V / RATE)  
+            chosen_waypoint[:2] *= (MAX_V / RATE)
         waypoint_msg = Float32MultiArray()
         waypoint_msg.data = chosen_waypoint
         waypoint_pub.publish(waypoint_msg)
@@ -250,7 +250,7 @@ if __name__ == "__main__":
         "-w",
         default=2, # close waypoints exihibit straight line motion (the middle waypoint is a good default)
         type=int,
-        help=f"""index of the waypoint used for navigation (between 0 and 4 or 
+        help=f"""index of the waypoint used for navigation (between 0 and 4 or
         how many waypoints your model predicts) (default: 2)""",
     )
     parser.add_argument(
@@ -265,7 +265,7 @@ if __name__ == "__main__":
         "-g",
         default=-1,
         type=int,
-        help="""goal node index in the topomap (if -1, then the goal node is 
+        help="""goal node index in the topomap (if -1, then the goal node is
         the last node in the topomap) (default: -1)""",
     )
     parser.add_argument(
@@ -273,7 +273,7 @@ if __name__ == "__main__":
         "-t",
         default=3,
         type=int,
-        help="""temporal distance within the next node in the topomap before 
+        help="""temporal distance within the next node in the topomap before
         localizing to it (default: 3)""",
     )
     parser.add_argument(
